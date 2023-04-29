@@ -32,7 +32,7 @@ public class MapPanel extends JPanel {
     List<Coordinate> visitedPoints = new ArrayList<>();
     
     // Create a new trail polygon with the updated list of points
-    MapPolygonImpl trail = new MapPolygonImpl(visitedPoints);;
+    MapPolygonImpl trail = new MapPolygonImpl(visitedPoints);
     
     public MapPanel() {
     	 // Set the layout manager to BorderLayout
@@ -126,6 +126,7 @@ public class MapPanel extends JPanel {
         
         trail.setColor(Color.RED);
         trail.setBackColor(new Color(255, 0, 0, 100)); // Transparent red
+       
         
         // Create a timer to animate the marker
         int FPS = 60; // frames per second 
@@ -151,7 +152,8 @@ public class MapPanel extends JPanel {
                     // Remove the old trail polygon from the map viewer
                     mapViewer.removeMapPolygon(trail);
                     
-                    trail = new MapPolygonImpl(visitedPoints);
+                    List<Coordinate> trailPoints = visitedPoints.subList(1, visitedPoints.size());
+                    trail = new MapPolygonImpl(trailPoints);
                     trail.setColor(Color.RED);
                     trail.setBackColor(new Color(255, 0, 0, 0)); // Transparent red
                     mapViewer.addMapPolygon(trail);
