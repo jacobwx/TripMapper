@@ -1,5 +1,17 @@
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
+
+import javax.swing.*;
+
+import org.openstreetmap.gui.jmapviewer.Coordinate;
+import org.openstreetmap.gui.jmapviewer.JMapViewer;
+import org.openstreetmap.gui.jmapviewer.tilesources.OsmTileSource;
+
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.*;
 
 public class Driver {
 	
@@ -8,35 +20,12 @@ public class Driver {
     public static void main(String[] args) throws FileNotFoundException, IOException {
 
     	// Read file and call stop detection
+    	TripPoint.readFile("triplog.csv");
+    	TripPoint.h2StopDetectionSimplified();
     	
-    	
-    	// Set up frame, include your name in the title
-    	
+        MapGUI map = new MapGUI("triplog.csv");
         
-        // Set up Panel for input selections
-        
-    	
-        // Play Button
-         
-    	
-        // CheckBox to enable/disable stops
-        
-    	
-        // ComboBox to pick animation time
-        
-    	
-        // Add all to top panel
-        
-        
-        // Set up mapViewer
-        
-        
-        // Add listeners for GUI components
-        
-
-        // Set the map center and zoom level
-        
-        
+        ArrayList<TripPoint> points = TripPoint.getMovingTrip();
     }
     
     // Animate the trip based on selections from the GUI components
