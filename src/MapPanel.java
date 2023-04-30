@@ -15,16 +15,12 @@ import org.openstreetmap.gui.jmapviewer.*;
 import org.openstreetmap.gui.jmapviewer.tilesources.OsmTileSource;
 
 public class MapPanel extends JPanel {
-
-    private boolean includeStops;
-    private int animationTime;
     private Timer animationTimer;
     private JMapViewer mapViewer;
     private int currentFrame;
     private IconMarker marker;
     // List of visited points 
     List<Coordinate> visitedPoints = new ArrayList<>();
-    
     // Create a new trail polygon with the updated list of points
     OpenPolygon trail = new OpenPolygon(visitedPoints);
     
@@ -45,7 +41,7 @@ public class MapPanel extends JPanel {
         add(mapViewer, BorderLayout.CENTER);
     }
     
-    // Load the trip points into a new list of Coordinates
+    // Load the list of TripPoints into a new list of Coordinates
     private List<Coordinate> loadTrack(ArrayList<TripPoint> tripList) {
     	List<Coordinate> track = new ArrayList<>();
     	
@@ -58,7 +54,7 @@ public class MapPanel extends JPanel {
     	return track;
     }
     
-    // Find minimum value of point's latitude or longitude
+    // Find the minimum value of point's latitude or longitude
     private static Coordinate min(List<Coordinate> track, boolean isLat) {
     	Coordinate min = track.get(0);
         
@@ -73,7 +69,7 @@ public class MapPanel extends JPanel {
     	return min;
     }
     
-    // Find maximum value of point's latitude or longitude 
+    // Find the maximum value of point's latitude or longitude 
     private static Coordinate max(List<Coordinate> track, boolean isLat) {
     	Coordinate max = track.get(0);
         
@@ -90,17 +86,23 @@ public class MapPanel extends JPanel {
 
     // Play the track animation
     public void playAnimation(int animationTime, boolean includeStops, String filename) throws FileNotFoundException, IOException {
-    	
-        this.animationTime = animationTime;
-        this.includeStops = includeStops;
         
+    	// Read file and apply second heuristic for stops 
         TripPoint.readFile(filename);
     	TripPoint.h2StopDetectionSimplified();
         
     	// Create track for animation
-    	List<Coordinate> track = loadTrack(TripPoint.getMovingTrip());
+     	List<Coordinate> track;
+    	if(includeStops) {
+    		track = loadTrack(TripPoint.getTrip());  // use all points if stops are included
+    	}
     	
-        if (animationTimer != null || marker != null) {
+    	else {
+    		track = loadTrack(TripPoint.getMovingTrip()); // only use moving points if stops not included
+    	}
+    	
+    	// Remove animation if one is already ongoing
+        if (animationTimer != null) {
         	// Stop animation if an animation is already ongoing
             animationTimer.stop();
             // Remove old marker from the map viewer
@@ -119,15 +121,13 @@ public class MapPanel extends JPanel {
         double avgLon = (min(track, false).getLon()+max(track, false).getLon())/2;
         mapViewer.setDisplayPosition(new Coordinate(avgLat, avgLon), 5);
         
-        trail.setColor(Color.RED);
-        trail.setBackColor(new Color(255, 0, 0, 100)); 
-        
         // Create a timer to animate the marker
         int FPS = 60; // frames per second 
         int interval = 1000 / FPS;
         int numFrames = animationTime * FPS; // total number of frames
         currentFrame = 0;
 
+        // Perform animation
         animationTimer = new Timer(interval, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -141,29 +141,24 @@ public class MapPanel extends JPanel {
                     
                     currentFrame++;
                     
-                    // Add the current marker position to the trail polygon
+                    // Add the current marker position to the trail line
                     visitedPoints.add(new Coordinate(marker.getLat(), marker.getLon()));
                     
-                    // Remove the old trail polygon from the map viewer
+                    // Remove the old trail line from the map viewer
                     mapViewer.removeMapPolygon(trail);
                     
-                    // Create a new trail polygon with updated points
+                    // Create a new trail line with updated points
                     trail = new OpenPolygon(visitedPoints);
                     trail.setColor(Color.RED);
-                    trail.setBackColor(new Color(255, 0, 0, 0)); // Transparent red
                     mapViewer.addMapPolygon(trail);
-                    
 
                 } else {
                     // Animation is complete
                     animationTimer.stop();
                     mapViewer.removeMapMarker(marker);
                     mapViewer.removeMapPolygon(trail);
-                    
                     visitedPoints.clear();
-              
                 }
-
                 // Redraw the map
                 mapViewer.repaint();
             }

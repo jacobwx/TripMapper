@@ -34,13 +34,14 @@ public class MapGUI extends JFrame {
         // Set up the JButton for playing/resetting the animation
         playButton = new JButton("Play");
         playButton.addActionListener(e -> {
+        	// Get desired length of animation
             int animationTime = Integer.parseInt((String) animationTimeComboBox.getSelectedItem());
+            // Determine whether or not stops should be included
             boolean includeStops = includeStopsCheckBox.isSelected();
             
             try {
 				mapPanel.playAnimation(animationTime, includeStops, filename);
 			} catch (IOException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
         });

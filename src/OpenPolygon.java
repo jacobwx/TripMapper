@@ -12,6 +12,7 @@ public class OpenPolygon extends MapPolygonImpl {
         super(coordinates);
     }
 
+    // Stop polygon from being closed
     @Override
     public void paint(Graphics g, List<Point> points) {
         int[] xPoints = new int[points.size()];
@@ -23,11 +24,13 @@ public class OpenPolygon extends MapPolygonImpl {
             yPoints[i] = (int) p.y;
             i++;
         }
-        g.setColor(getColor());
         
         Graphics2D g2d = (Graphics2D) g;
+        // Set line color
+        g2d.setColor(getColor());
+        // Set line width
         g2d.setStroke(new BasicStroke(3));
-        
+        // Draw line
         g2d.drawPolyline(xPoints, yPoints, points.size());
     }
 }
