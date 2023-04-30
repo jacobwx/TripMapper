@@ -23,7 +23,7 @@ public class IconMarker extends MapMarkerCircle implements MapMarker {
         this.image = image;
     }
 
-    @Override
+	@Override
     public void paint(Graphics g, Point position, int radio) {
         double r = this.getRadius();
         int width = (int) (this.image.getWidth(null) * r);

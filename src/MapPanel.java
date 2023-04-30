@@ -1,14 +1,10 @@
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Point;
-import java.awt.Polygon;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import javax.swing.ImageIcon;
@@ -17,8 +13,6 @@ import javax.swing.Timer;
 
 import org.openstreetmap.gui.jmapviewer.*;
 import org.openstreetmap.gui.jmapviewer.tilesources.OsmTileSource;
-import org.openstreetmap.gui.jmapviewer.interfaces.MapPolygon;
-import org.openstreetmap.gui.jmapviewer.interfaces.MapRectangle;
 
 public class MapPanel extends JPanel {
 
@@ -32,7 +26,7 @@ public class MapPanel extends JPanel {
     List<Coordinate> visitedPoints = new ArrayList<>();
     
     // Create a new trail polygon with the updated list of points
-    MapPolygonImpl trail = new MapPolygonImpl(visitedPoints);
+    OpenPolygon trail = new OpenPolygon(visitedPoints);
     
     public MapPanel() {
     	 // Set the layout manager to BorderLayout
@@ -51,6 +45,7 @@ public class MapPanel extends JPanel {
         add(mapViewer, BorderLayout.CENTER);
     }
     
+    // Load the trip points into a new list of Coordinates
     private List<Coordinate> loadTrack(ArrayList<TripPoint> tripList) {
     	List<Coordinate> track = new ArrayList<>();
     	
@@ -93,6 +88,7 @@ public class MapPanel extends JPanel {
     	return max;
     }
 
+    // Play the track animation
     public void playAnimation(int animationTime, boolean includeStops, String filename) throws FileNotFoundException, IOException {
     	
         this.animationTime = animationTime;
@@ -104,7 +100,6 @@ public class MapPanel extends JPanel {
     	// Create track for animation
     	List<Coordinate> track = loadTrack(TripPoint.getMovingTrip());
     	
-        // TODO: Add animation code here
         if (animationTimer != null || marker != null) {
         	// Stop animation if an animation is already ongoing
             animationTimer.stop();
@@ -125,8 +120,7 @@ public class MapPanel extends JPanel {
         mapViewer.setDisplayPosition(new Coordinate(avgLat, avgLon), 5);
         
         trail.setColor(Color.RED);
-        trail.setBackColor(new Color(255, 0, 0, 100)); // Transparent red
-       
+        trail.setBackColor(new Color(255, 0, 0, 100)); 
         
         // Create a timer to animate the marker
         int FPS = 60; // frames per second 
@@ -144,27 +138,30 @@ public class MapPanel extends JPanel {
                     marker.setLat(coord.getLat());
                     marker.setLon(coord.getLon());
                     marker.setImage(new ImageIcon("raccoon.png").getImage());
+                    
                     currentFrame++;
                     
                     // Add the current marker position to the trail polygon
                     visitedPoints.add(new Coordinate(marker.getLat(), marker.getLon()));
-                   
+                    
                     // Remove the old trail polygon from the map viewer
                     mapViewer.removeMapPolygon(trail);
                     
-                    List<Coordinate> trailPoints = visitedPoints.subList(1, visitedPoints.size());
-                    trail = new MapPolygonImpl(trailPoints);
+                    // Create a new trail polygon with updated points
+                    trail = new OpenPolygon(visitedPoints);
                     trail.setColor(Color.RED);
                     trail.setBackColor(new Color(255, 0, 0, 0)); // Transparent red
                     mapViewer.addMapPolygon(trail);
-
+                    
 
                 } else {
                     // Animation is complete
                     animationTimer.stop();
                     mapViewer.removeMapMarker(marker);
                     mapViewer.removeMapPolygon(trail);
+                    
                     visitedPoints.clear();
+              
                 }
 
                 // Redraw the map
@@ -176,9 +173,4 @@ public class MapPanel extends JPanel {
         animationTimer.start();
     }
 
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        // TODO: Add map drawing code here
-    }
 }
